@@ -1,0 +1,56 @@
+@bot.command(pass_context=True)
+async def play(ctx, url):
+    server = ctx.message.server
+    channel = ctx.message.author.voice.voice_channel
+    await bot.join_voice_channel(channel)
+    voice_client = bot.voice_client_in(server)
+    player = await voice_client.create_ytdl_player(url)
+    players[server.id] = player
+    player.start()
+    await bot.say("Playing...")
+
+
+@bot.command(pass_context=True)
+async def leave(ctx):
+    server = ctx.message.server
+    id = ctx.message.server.id
+    players[id].stop()
+    voice_client = bot.voice_client_in(server)
+    await voice_client.disconnect()
+    await bot.say("Leaving...")
+
+
+@bot.command(pass_context=True)
+async def pause(ctx):
+    id = ctx.message.server.id
+    players[id].pause()
+    await bot.say("Pausing...")
+
+
+@bot.command(pass_context=True)
+async def resume(ctx):
+    id = ctx.message.server.id
+    players[id].resume()
+    await bot.say("Resuming...")
+
+
+@bot.command(pass_context=True)
+async def volume(ctx, volume):
+    _ = int(volume)/100
+    id = ctx.message.server.id
+    players[id].volume = _
+    await bot.say("Volume set to: " + volume)
+
+
+@bot.command(pass_context=True)
+async def musicbot(ctx, ):
+    executer = ctx.message.author
+    print(datetime.datetime.now().strftime("[%d-%m-%y|%H:%M:%S]"), '[Musik-Command] By:', executer)
+    emb = discord.Embed(color=discord.Color.dark_orange(), description="Meine Musik-Befehle:")
+    emb.add_field(name="play <url>:", value="Spielt das YT-Video ab", inline=True)
+    emb.add_field(name="leave:", value="Stoppt das Video und leavt", inline=True)
+    emb.add_field(name="pause:", value="Pausiert das Video", inline=True)
+    emb.add_field(name="resume:", value="Lässt das Video weiter laufen", inline=True)
+    emb.add_field(name="volume 0-200:", value="Stellt die Lautstärke ein", inline=True)
+    emb.set_footer(text="Funktioniert nur, wenn ich von Wolf gehostet werde!")
+    await bot.say(embed=emb)
